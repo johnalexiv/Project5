@@ -22,12 +22,11 @@ struct Philosopher
     sem_t *room;
 };
 
-bool checkValidNumOfArguments(int);
+bool isValidNumOfArguments(int);
 bool isDeadlockSimulation(char);
-bool isNormalSimulation(char);
+bool isSolutionSimulation(char);
 void philosopherSimulation();
-void waitForPhilosophers(struct Philosopher *, int);
-struct Philosopher *createPhilosophers(sem_t *, sem_t *, int);
+struct Philosopher *createAndInitializePhilosophers(sem_t *, sem_t *, int);
 void deadLockSimulation();
 sem_t *createAndInitializeForks(int);
 sem_t *createAndInitializeRoom(int);
@@ -36,31 +35,33 @@ void startPhilosopher(void *);
 void diningPhilosopher(struct Philosopher *);
 void pickUpForks(struct Philosopher *);
 void putDownForks(struct Philosopher *);
+void waitForPhilosophers(struct Philosopher *, int);
 
 bool enable_room;
 
-int main(int argc, int *argv[])
+int main(int argc, char *argv[])
 {
-    if ( checkValidNumOfArguments(argc) )
+    if ( !isValidNumOfArguments(argc) )
         exit(0);
 
-    if ( isDeadlockSimulation(argv[1][0]) )
+    char argument = argv[1][0];
+    if ( isDeadlockSimulation(argument) )
         enable_room = false;
-    else if ( isNormalSimulation(argv[1][0]) )
+    else if ( isSolutionSimulation(argument) )
         enable_room = true;
     else
         exit(0);
-    
+
     philosopherSimulation();
 
     return 0;
 }
 
-bool checkValidNumOfArguments(int argc)
+bool isValidNumOfArguments(int argc)
 {
     if (argc != 2)
-        return true;
-    return false;
+        return false;
+    return true;
 }
 
 bool isDeadlockSimulation(char argument)
@@ -70,7 +71,7 @@ bool isDeadlockSimulation(char argument)
     return false;
 }
 
-bool isNormalSimulation(char argument)
+bool isSolutionSimulation(char argument)
 {
     if ( argument == '0' )
         return true;
@@ -82,8 +83,8 @@ void philosopherSimulation()
     int numOfPhilosophers = 5;
     sem_t *forks = createAndInitializeForks(numOfPhilosophers);
     sem_t *room = createAndInitializeRoom(numOfPhilosophers);
+    struct Philosopher *philosophers = createAndInitializePhilosophers(forks, room, numOfPhilosophers);
 
-    struct Philosopher *philosophers = createPhilosophers(forks, room, numOfPhilosophers);
     initializePhilosophers(philosophers, numOfPhilosophers);
 
     waitForPhilosophers(philosophers, numOfPhilosophers);
@@ -107,7 +108,7 @@ sem_t *createAndInitializeRoom(int numOfPhilosophers)
     return room;
 }
 
-struct Philosopher *createPhilosophers(sem_t *forks, sem_t *room, int numOfPhilosophers)
+struct Philosopher *createAndInitializePhilosophers(sem_t *forks, sem_t *room, int numOfPhilosophers)
 {
     int i;
     struct Philosopher *philosophers = (struct Philosopher *)calloc(numOfPhilosophers, sizeof(struct Philosopher));
