@@ -149,8 +149,12 @@ void startPhilosopher(void *argument)
     struct Philosopher *philosopher = (struct Philosopher *)argument;
 
     int i = 0;
-    while(true)
-        diningPhilosopher(philosopher);    
+    if ( enable_room )
+        while(i++ < 5)
+            diningPhilosopher(philosopher);    
+    else
+        while(true)
+            diningPhilosopher(philosopher);    
 
     pthread_exit(NULL);
 }
